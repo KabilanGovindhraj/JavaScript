@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>To-Do List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        #todo-list {
+            margin: 20px;
+        }
+        #todo-list li {
+            list-style-type: none;
+            margin-bottom: 5px;
+        }
+        .task-done {
+            text-decoration: line-through;
+            color: gray;
+        }
+        .edit-task {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>To-Do List</h1>
+    <div>
+        <input type="text" id="task" placeholder="Enter task description">
+        <input type="date" id="due-date">
+        <select id="priority">
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+        </select>
+        <button onclick="addTask()">Add Task</button>
+    </div>
+    <ul id="todo-list"></ul>
+    <script>
+        function getTasksFromLocalStorage() {
+            const tasksString = localStorage.getItem("tasks");
+            return tasksString ? JSON.parse(tasksString) : [];
+        }
+        function saveTasksToLocalStorage(tasks) {
+            localStorage.setItem("tasks", JSON.stringify(tasks));
+        }
+        function displayTasks() {
+            const todoList = document.getElementById("todo-list");
+            todoList.innerHTML = "";
+
+            tasks.forEach((task, index) => {
+                const taskItem = document.createElement("li");
+                taskItem.innerHTML = `
+                    <input type="checkbox" onclick="toggleTask(${index})" ${task.done ? "checked" : ""}>
+                    <span class="${task.done ? "task-done" : ""}">${task.description}</span>
+                    <span class="${task.done ? "task-done" : ""}">Due: ${task.dueDate}</span>
+                    <span class="${task.done ? "task-done" : ""}">Priority: ${task.priority}</span>
+                    <button onclick="editTask(${index})">Edit</button>
+                    <button onclick="removeTask(${index})">Remove</button>
+                    <div class="edit-task" id="edit-task-${index}">
+                        <input type="text" placeholder="New description" id="edit-description-${index}">
+                        <input type="date" id="edit-due-date-${index}">
+                        <select id="edit-priority-${index}">
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+                        <button onclick="saveEditedTask(${index})">Save</button>
+                        <button onclick="cancelEditTask(${index})">Cancel</button>
+                    </div>
+                `;
+                todoList.appendChild(taskItem);
+            });
+        }
+        function addTask() {
+            const taskInput = document.getElementById("task");
+            const description = taskInput.value.trim();
+            const dueDate = document.getElementById("due-date").value;
+            const priority = document.getElementById("priority").value;
+
+            if (description !== "") {
+                tasks.push({ description: description, dueDate: dueDate, priority: priority, done: false });
+                taskInput.value = "";
+                saveTasksToLocalStorage(tasks);
+                displayTasks();
+            }
+        }
+        function toggleTask(index) {
+            tasks[index].done = !tasks[index].done;
+            saveTasksToLocalStorage(tasks);
+            displayTasks();
+        }
+        function removeTask(index) {
+            tasks.splice(index, 1);
+            saveTasksToLocalStorage(tasks);
+            displayTasks();
+        }
+        function editTask(index) {
+            const editTaskSection = document.getElementById(`edit-task-${index}`);
+            editTaskSection.style.display = "block";
+        }
+        function saveEditedTask(index) {
+            const newDescription = document.getElementById(`edit-description-${index}`).value.trim();
+            const newDueDate = document.getElementById(`edit-due-date-${index}`).value;
+            const newPriority = document.getElementById(`edit-priority-${index}`).value;
+            if (newDescription !== "") {
+                tasks[index].description = newDescription;
+                tasks[index].dueDate = newDueDate;
+                tasks[index].priority = newPriority;
+                saveTasksToLocalStorage(tasks);
+                displayTasks();
+            }
+        }
+        function cancelEditTask(index) {
+            const editTaskSection = document.getElementById(`edit-task-${index}`);
+            editTaskSection.style.display = "none";
+        }
+        let tasks = getTasksFromLocalStorage();
+        displayTasks();
+    </script>
+</body>
+</html>
+
